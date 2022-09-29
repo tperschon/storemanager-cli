@@ -1,6 +1,7 @@
-// const db = require('../config/connection');
+// import dependencies
 const inquirer = require('inquirer');
 const { getAllFromTable, addToTable, updateTableEntry } = require('./queries/index')
+// found this package to format console.table to sql table format
 require('console.table');
 
 const mainMenu = async () => {
@@ -17,12 +18,13 @@ const mainMenu = async () => {
             'Add A Department',
             'Add A Role',
             'Add An Employee',
-            'Updated An Employee Role',
+            'Update Employee Role',
             'Exit'
         ]
     },
     ]);
     // switch to decide which menu to go to
+    // all options return to main menu except the exit, which is handled by default case
     switch(inq.select) {
         case 'View All Departments': {
             const departments = await getAllFromTable('departments');
@@ -43,6 +45,7 @@ const mainMenu = async () => {
             break;
         }
         case 'Add A Department': {
+            // prompt user for the name of the department
             const inq = await inquirer.prompt([
                 {
                     type: 'input',
@@ -50,6 +53,7 @@ const mainMenu = async () => {
                     name: 'depName'
                 }
             ]);
+            // try-catch to add a department using our function and user input
             try {
                 await addToTable('departments', 'name', `"${inq.depName}"`);
                 console.log(`${inq.depName} added to departments`);
@@ -60,8 +64,11 @@ const mainMenu = async () => {
             break;
         }
         case 'Add A Role': {
+            // first we need to get all the departments
             const departments = await getAllFromTable('departments');
+            // we use the departments to make a list of the names to prompt
             const departmentNames = departments.map(dep => dep.name);
+            // inquirer prompt for info
             const inq = await inquirer.prompt([
                 {
                     type: 'input',
@@ -72,16 +79,20 @@ const mainMenu = async () => {
                     type: 'input',
                     message: 'Enter the salary of the new role($$/year): ',
                     name: 'roleSalary',
+                    // validate to ensure the input is a number
                     validate: sal => isNaN(sal) ? "Salary must be a number." : true
                 },
                 {
                     type: 'list',
                     message: 'Select the department for the new role: ',
                     name: 'roleDepartment',
+                    // we use the names we gleaned from departments as choices here
                     choices: departmentNames
                 }
             ]);
+            // find the specific department that the user chose by comparing their name choice to the list we already got
             const departmentId = departments.filter(dep => dep.name === inq.roleDepartment);
+            // try-catch to use function to add to table using user input and information previously constructed from user input, need to parseInt the salary since inquirer input returns a string
             try {
                 await addToTable('roles', 'title, salary, department_id', `"${inq.roleName}", ${parseInt(inq.roleSalary)}, ${departmentId[0].id}`);
                 console.log(`${inq.roleName} added to roles`);
@@ -92,9 +103,13 @@ const mainMenu = async () => {
             break;
         }
         case 'Add An Employee': {
+            // get all the roles first
             const roles = await getAllFromTable('roles');
+            // get the titles from the roles
             const roleTitles = roles.map(role => role.title);
+            // get all the employees
             const employees = await getAllFromTable('employees');
+            // get the employee names, template literal concat the first+last name
             const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`)
             const inq = await inquirer.prompt([
                 {
@@ -111,18 +126,25 @@ const mainMenu = async () => {
                     type: 'list',
                     message: 'Select the role for the employee: ',
                     name: 'empRole',
+                    // selection of titles from existing roles
                     choices: roleTitles
                 },
                 {
                     type: 'list',
                     message: 'Select the employee\'s manager: ',
                     name: 'empManager',
+                    // select employee as manager from employeeNames list
                     choices: employeeNames
                 }
             ]);
+            // find the role the user chose by comparing their choice to the list of roles we already got
             const roleId = roles.filter(role => role.title === inq.empRole);
+            // split the name of the chosen manager back into two variables
             const names = inq.empManager.split(' ');
+            // find the manager using a double filter, first we filter out any who don't have the same first name, next we go by the same last name
+            // THIS WILL BREAK WITH MULTIPLE EMPLOYEES WITH THE SAME NAME, a better solution would be to have parellel lists
             const managerId = employees.filter(emp => emp.first_name === names[0]).filter(emp => emp.last_name === names[1]);
+            // try-catch to use our function and user input to insert into table
             try {
                 await addToTable('employees', 'first_name, last_name, role_id, manager_id', `"${inq.empFirstName}", "${inq.empLastName}", ${roleId[0].id}, ${managerId[0].id}`);
                 console.log(`${inq.empFirstName} ${inq.empLastName} added to employees`);
@@ -132,14 +154,39 @@ const mainMenu = async () => {
             mainMenu();
             break;
         }
-        case 'Updated An Employee Role': {
-            console.log("frick")
+        case 'Update Employee Role': {
+            const employees = await getAllFromTable('employees');
+            const roles = await getAllFromTable('roles');
+            const inq = await inquirer.prompt([
+                {
+                    type: 'list',
+                    message: 'Please select the employee whose role you wish to update: ',
+                    name: 'employeeName',
+                    choices: employees.map(employee => `${employee.first_name} ${employee.last_name}`)
+                },
+                {
+                    type: 'list',
+                    message: 'Please select the new role for the employee: ',
+                    name: 'employeeRole',
+                    choices: roles.map(role => role.title)
+                }
+            ]);
+            const names = inq.employeeName.split(' ');
+            const pickedEmployee = employees.filter(emp => emp.first_name === names[0]).filter(emp => emp.last_name === names[1]);
+            const pickedRole = roles.filter(role => role.title === inq.employeeRole);
+            console.log(pickedEmployee)
+            try {
+                await updateTableEntry('employees', ['role_id'], [pickedRole[0].id], pickedEmployee[0].id);
+                console.log(`${inq.employeeName}'s role updated to ${inq.employeeRole}`);
+            } catch {
+                console.log('Error changing employee role');
+            }
             mainMenu();
             break;
         }
         // default handles the Exit option as well as unexpected stuff
         default: {
-            return;
+            process.exit(0);
         }
     }
 };

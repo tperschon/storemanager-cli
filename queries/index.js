@@ -10,8 +10,14 @@ const addToTable = async (table, fields, values) => {
     VALUES (${values})`);
 };
 
-const changeTableEntry = async () => {
-
+const updateTableEntry = async (table, fields, values, id) => {
+    let setString = '';
+    for(i = 0; i < fields.length; i++) {
+        setString+= `${fields[i]} = ${values[i]}`
+    };
+    const res = await db.promise().query(`UPDATE ${table}
+    SET ${setString}
+    WHERE id = ${id}`);
 };
 
-module.exports = { getAllFromTable, addToTable, changeTableEntry }
+module.exports = { getAllFromTable, addToTable, updateTableEntry }
