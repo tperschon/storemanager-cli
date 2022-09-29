@@ -5,12 +5,12 @@ require('dotenv').config();
 // create a db connection we can export
 const db = mysql.createConnection(
     {
-      host: DB_HOST,
-      user: DB_USER,
-      password: DB_PASS,
-      database: DB_BASE
+      host: process.env.DB_HOST,
+      user: process.env.DB_USER,
+      password: process.env.DB_PASS,
+      database: 'employees_db'
     },
-    console.log(`Connected to the ${DB_BASE} database.`)
+    console.log(`Connected to the employees_db database.`)
   );
 
 module.exports = db;
