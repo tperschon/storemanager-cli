@@ -8,7 +8,7 @@ const mainMenu = async () => {
     const inq = await inquirer.prompt([
     {
         type: 'list',
-        message: 'What wouldd you like to do?',
+        message: 'What would you like to do?',
         name: 'select',
         choices: [
             'View All Departments',
@@ -62,27 +62,33 @@ const mainMenu = async () => {
         case 'Add A Role': {
             const departments = await getAllFromTable('departments');
             const departmentNames = departments.map(dep => dep.name);
-            console.log(departmentNames)
-            // const inq = await inquirer.prompt([
-            //     {
-            //         type: 'input',
-            //         message: 'Enter the name of the new role: ',
-            //         name: 'roleName'
-            //     },
-            //     {
-            //         type: 'input',
-            //         message: 'Enter the salary of the new role: ',
-            //         name: 'roleSalary',
-            //     }
-
-            // ]);
-            // try {
-            //     await addToTable('departments', 'name', inq.depName);
-            //     console.log(`${inq.depName} added to departments`);
-            // } catch {
-            //     console.log(`Error adding ${inq.depName} to departments`);
-            // };
-            // mainMenu();
+            const inq = await inquirer.prompt([
+                {
+                    type: 'input',
+                    message: 'Enter the name of the new role: ',
+                    name: 'roleName'
+                },
+                {
+                    type: 'input',
+                    message: 'Enter the salary of the new role($$/year): ',
+                    name: 'roleSalary',
+                    validate: sal => isNaN(sal) ? "Salary must be a number." : true
+                },
+                {
+                    type: 'list',
+                    message: 'Select the department for the new role: ',
+                    name: 'roleDepartment',
+                    choices: departmentNames
+                }
+            ]);
+            const departmentChosen = departments.filter(dep => dep.name === inq.roleDepartment);
+            try {
+                await addToTable('roles', 'title, salary, department_id', `"${inq.roleName}", ${parseInt(inq.roleSalary)}, ${departmentChosen[0].id}`);
+                console.log(`${inq.roleName} added to roles`);
+            } catch {
+                console.log(`Error adding ${inq.roleName} to roles`);
+            };
+            mainMenu();
             break;
         }
         case 'Add An Employee': {
