@@ -81,9 +81,9 @@ const mainMenu = async () => {
                     choices: departmentNames
                 }
             ]);
-            const departmentChosen = departments.filter(dep => dep.name === inq.roleDepartment);
+            const departmentId = departments.filter(dep => dep.name === inq.roleDepartment);
             try {
-                await addToTable('roles', 'title, salary, department_id', `"${inq.roleName}", ${parseInt(inq.roleSalary)}, ${departmentChosen[0].id}`);
+                await addToTable('roles', 'title, salary, department_id', `"${inq.roleName}", ${parseInt(inq.roleSalary)}, ${departmentId[0].id}`);
                 console.log(`${inq.roleName} added to roles`);
             } catch {
                 console.log(`Error adding ${inq.roleName} to roles`);
@@ -92,7 +92,43 @@ const mainMenu = async () => {
             break;
         }
         case 'Add An Employee': {
-            console.log("frick")
+            const roles = await getAllFromTable('roles');
+            const roleTitles = roles.map(role => role.title);
+            const employees = await getAllFromTable('employees');
+            const employeeNames = employees.map(employee => `${employee.first_name} ${employee.last_name}`)
+            const inq = await inquirer.prompt([
+                {
+                    type: 'input',
+                    message: 'Enter the first name of the employee: ',
+                    name: 'empFirstName'
+                },
+                {
+                    type: 'input',
+                    message: 'Enter the last name of the employee: ',
+                    name: 'empLastName'
+                },
+                {
+                    type: 'list',
+                    message: 'Select the role for the employee: ',
+                    name: 'empRole',
+                    choices: roleTitles
+                },
+                {
+                    type: 'list',
+                    message: 'Select the employee\'s manager: ',
+                    name: 'empManager',
+                    choices: employeeNames
+                }
+            ]);
+            const roleId = roles.filter(role => role.title === inq.empRole);
+            const names = inq.empManager.split(' ');
+            const managerId = employees.filter(emp => emp.first_name === names[0]).filter(emp => emp.last_name === names[1]);
+            try {
+                await addToTable('employees', 'first_name, last_name, role_id, manager_id', `"${inq.empFirstName}", "${inq.empLastName}", ${roleId[0].id}, ${managerId[0].id}`);
+                console.log(`${inq.empFirstName} ${inq.empLastName} added to employees`);
+            } catch {
+                console.log(`Error adding ${inq.empFirstName} ${inq.empLastName} to employees`);
+            };
             mainMenu();
             break;
         }
