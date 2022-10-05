@@ -155,26 +155,33 @@ const mainMenu = async () => {
             break;
         }
         case 'Update Employee Role': {
+            // get a list of employees
             const employees = await getAllFromTable('employees');
+            // get a list of roles
             const roles = await getAllFromTable('roles');
             const inq = await inquirer.prompt([
                 {
                     type: 'list',
                     message: 'Please select the employee whose role you wish to update: ',
                     name: 'employeeName',
+                    // feed the employee names in as choices
                     choices: employees.map(employee => `${employee.first_name} ${employee.last_name}`)
                 },
                 {
                     type: 'list',
                     message: 'Please select the new role for the employee: ',
                     name: 'employeeRole',
+                    // feed the role titles in as choices
                     choices: roles.map(role => role.title)
                 }
             ]);
+            // split the picked name back into a 2-name format
             const names = inq.employeeName.split(' ');
+            // find the picked employee from the list by name using a double filter
             const pickedEmployee = employees.filter(emp => emp.first_name === names[0]).filter(emp => emp.last_name === names[1]);
+            // find the picked role from the list by title
             const pickedRole = roles.filter(role => role.title === inq.employeeRole);
-            console.log(pickedEmployee)
+            // try-catch to update the table of the employee by id using user input information
             try {
                 await updateTableEntry('employees', ['role_id'], [pickedRole[0].id], pickedEmployee[0].id);
                 console.log(`${inq.employeeName}'s role updated to ${inq.employeeRole}`);
