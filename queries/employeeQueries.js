@@ -13,8 +13,4 @@ WHERE e.role_id = r.id AND r.department_id = d.id and em.id = e.manager_id
     return res[0];
 };
 
-const addAnEmployee = async () => {
-
-};
-
-module.exports = { viewAllEmployees, addAnEmployee };
+module.exports = { viewAllEmployees };

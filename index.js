@@ -1,28 +1,15 @@
 // import dependencies
 const inquirer = require('inquirer');
-const { getAllFromTable, addToTable, updateTableEntry } = require('./queries/index')
+const { getAllFromTable, addToTable, updateTableEntry } = require('./queries/generalQueries')
+const { viewAllEmployees, addAnEmployee } = require('./queries/employeeQueries');
+const { viewAllRoles } = require('./queries/roleQueries');
+const p = require('./prompts/index')
 // found this package to format console.table to sql table format
 require('console.table');
 
 const mainMenu = async () => {
     // prompt main menu options
-    const inq = await inquirer.prompt([
-    {
-        type: 'list',
-        message: 'What would you like to do?',
-        name: 'select',
-        choices: [
-            'View All Departments',
-            'View All Employees',
-            'View All Roles',
-            'Add A Department',
-            'Add A Role',
-            'Add An Employee',
-            'Update Employee Role',
-            'Exit'
-        ]
-    },
-    ]);
+    const inq = await inquirer.prompt([p.mainMenu]);
     // switch to decide which menu to go to
     // all options return to main menu except the exit, which is handled by default case
     switch(inq.select) {
@@ -33,13 +20,13 @@ const mainMenu = async () => {
             break;
         }
         case 'View All Employees': {
-            const employees = await getAllFromTable('employees');
+            const employees = await viewAllEmployees();
             console.table(employees);
             mainMenu();
             break;
         }
         case 'View All Roles': {
-            const roles = await getAllFromTable('roles');
+            const roles = await viewAllRoles();
             console.table(roles);
             mainMenu();
             break;
