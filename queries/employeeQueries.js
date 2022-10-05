@@ -17,11 +17,4 @@ const addAnEmployee = async () => {
 
 };
 
-viewAllEmployees();
-module.exports = { viewAllEmployees, addAnEmployee }
-
-
-// SELECT e.id, e.first_name, e.last_name, r.title, d.name, r.salary, concat(e.first_name, e.last_name) AS manager
-// FROM departments as d
-// INNER JOIN roles as r on departments as d WHERE r.department_id = d.id
-// INNER JOIN employees AS e ON roles as r WHERE e.role_id = r.id
+module.exports = { viewAllEmployees, addAnEmployee };

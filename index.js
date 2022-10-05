@@ -134,16 +134,20 @@ const mainMenu = async () => {
                     message: 'Select the employee\'s manager: ',
                     name: 'empManager',
                     // select employee as manager from employeeNames list
-                    choices: employeeNames
+                    choices: ["None", ...employeeNames]
                 }
             ]);
             // find the role the user chose by comparing their choice to the list of roles we already got
             const roleId = roles.filter(role => role.title === inq.empRole);
-            // split the name of the chosen manager back into two variables
-            const names = inq.empManager.split(' ');
-            // find the manager using a double filter, first we filter out any who don't have the same first name, next we go by the same last name
-            // THIS WILL BREAK WITH MULTIPLE EMPLOYEES WITH THE SAME NAME, a better solution would be to have parellel lists
-            const managerId = employees.filter(emp => emp.first_name === names[0]).filter(emp => emp.last_name === names[1]);
+            // null value for if they choose none
+            let managerId = [{ id: null}];
+            // if there is a manager chosen, split the name of the chosen manager back into two variables
+            if(inq.empManager !== "None") {
+                const names = inq.empManager.split(' ');
+                // find the manager using a double filter, first we filter out any who don't have the same first name, next we go by the same last name
+                // THIS WILL BREAK WITH MULTIPLE EMPLOYEES WITH THE SAME NAME, a better solution would be to have parellel lists
+                managerId = employees.filter(emp => emp.first_name === names[0]).filter(emp => emp.last_name === names[1]);
+            }
             // try-catch to use our function and user input to insert into table
             try {
                 await addToTable('employees', 'first_name, last_name, role_id, manager_id', `"${inq.empFirstName}", "${inq.empLastName}", ${roleId[0].id}, ${managerId[0].id}`);
