@@ -37,6 +37,7 @@ Use a command line interface to navigate to the project folder
 To start the application, run the command 'npm start'
 Each menu option is self-descriptive as to its purpose, and it input prompts will be displayed as necessary.
 ```
+[Usage Demonstration](https://drive.google.com/file/d/1ygAd7yahAqDfWILWHz3zb1LTMlIEv2O7/view)
 # Contributing
 If you would like to contribute to the project, it can be found here: [storemanager-cli](https://github.com/tperschon/storemanager-cli)
 # Questions
